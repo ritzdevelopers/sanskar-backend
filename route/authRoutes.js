@@ -1,6 +1,7 @@
 import express from "express"
 import { deleteAccessUser, getEnquiryDetails, sendOtp,verifyOtp, resetPassword,getBlogData, getBlogById, loginStaff, sendBlogData, registerStaff, getEnquireNowData, getAllStaffUsers,footerEmail,getFooterEmailData,SendContactUsData ,getContactUsData,SendCarrerData,getCarrerFormData, sendNriFormData, getNriFormData, getMe, updateStaffPermissions, logoutStaff,getRecentBlogs, deleteBlogData, updateBlogData} from "../controller/authController.js"
 import { upload, uploadBlog } from "../middleware/multer.js"
+import { authMiddleware } from "../middleware/authMiddleware.js"
 
 const router = express.Router()
 
@@ -8,7 +9,7 @@ router.post("/register-staff", registerStaff)
 router.get("/get-all-staff-users", getAllStaffUsers)
 router.post("/login-staff", loginStaff)
 router.post("/logout-staff", logoutStaff)
-router.get("/me", getMe)
+router.get("/me", authMiddleware, getMe)
 
 //access-staff-api
 router.patch("/staff-permissions/:id", updateStaffPermissions)
