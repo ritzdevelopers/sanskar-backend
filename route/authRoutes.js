@@ -6,10 +6,14 @@ import { authMiddleware } from "../middleware/authMiddleware.js"
 const router = express.Router()
 
 router.post("/register-staff", registerStaff)
-router.get("/get-all-staff-users", getAllStaffUsers)
+
 router.post("/login-staff", loginStaff)
+
+
+router.use(authMiddleware);
 router.post("/logout-staff", logoutStaff)
-router.get("/me", authMiddleware, getMe)
+router.get("/get-all-staff-users", getAllStaffUsers)
+router.get("/me", getMe);
 
 //access-staff-api
 router.patch("/staff-permissions/:id", updateStaffPermissions)
