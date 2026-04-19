@@ -27,11 +27,11 @@ function signUserToken(user) {
 }
 
 const COOKIE_OPTS = {
-  // httpOnly: true,
+  httpOnly: true,
   maxAge: 7 * 24 * 60 * 60 * 1000,
-  sameSite: "lax",
+  sameSite: "none",
   path: "/",
-  secure: process.env.NODE_ENV === "production",
+  secure: true,
 }
 
 
