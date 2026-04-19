@@ -31,7 +31,7 @@ const COOKIE_OPTS = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
   sameSite: "none",
   path: "/",
-  secure: true,
+  secure: true // process.env.NODE_ENV === "production", 
 }
 
 
