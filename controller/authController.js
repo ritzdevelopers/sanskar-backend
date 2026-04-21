@@ -31,10 +31,11 @@ function signUserToken(user) {
 const COOKIE_OPTS = {
   httpOnly: true,
   maxAge: 7 * 24 * 60 * 60 * 1000,
-  sameSite: "lax",
+  sameSite: "none",
   path: "/",
-  secure: process.env.NODE_ENV === "production",
+  secure: true // process.env.NODE_ENV === "production", 
 }
+
 
 function stripPassword(doc) {
   const o = doc.toObject ? doc.toObject() : { ...doc }
@@ -58,6 +59,7 @@ async function persistSession(res, userId, token) {
   await User.findByIdAndUpdate(userId, { sessionToken: token })
   res.cookie("token", token, COOKIE_OPTS)
 }
+
 
 export const registerStaff = async (req, res) => {
   try {
@@ -152,14 +154,23 @@ export const deleteAccessUser=async (req, res) => {
 
 function getJwtPayloadFromCookie(req) {
   const token = req.cookies?.token
+
+  console.log("Token from cookie:", token) // 👈 yaha log hoga
+
   if (!token || typeof token !== "string") return null
+
   try {
-    return jwt.verify(token, jwtSecret())
-  } catch {
+    const decoded = jwt.verify(token, jwtSecret())
+
+    console.log("Decoded payload:", decoded) // 👈 payload bhi dekh sakte ho
+
+    return decoded
+  } catch (err) {
+    console.log("JWT Error:", err.message) // 👈 error log
+
     return null
   }
 }
-
 export const logoutStaff = async (req, res) => {
   try {
     res.clearCookie("token", {

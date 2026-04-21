@@ -1,36 +1,41 @@
 import express from "express"
 import { deleteAccessUser, getEnquiryDetails, sendOtp,verifyOtp, resetPassword,getBlogData, getBlogById, loginStaff, sendBlogData, registerStaff, getEnquireNowData, getAllStaffUsers,footerEmail,getFooterEmailData,SendContactUsData ,getContactUsData,SendCarrerData,getCarrerFormData, sendCareerPageJobData, getCareerPageJobData, sendNriFormData, getNriFormData, getMe, updateStaffPermissions, logoutStaff,getRecentBlogs, deleteBlogData, updateBlogData} from "../controller/authController.js"
 import { upload, uploadBlog } from "../middleware/multer.js"
+import { authMiddleware } from "../middleware/authMiddleware.js"
 
 const router = express.Router()
 
 router.post("/register-staff", registerStaff)
-router.get("/get-all-staff-users", getAllStaffUsers)
+
 router.post("/login-staff", loginStaff)
-router.post("/logout-staff", logoutStaff)
-router.get("/me", getMe)
+
+
+
+router.post("/logout-staff",authMiddleware, logoutStaff)
+router.get("/get-all-staff-users",authMiddleware, getAllStaffUsers)
+router.get("/me",authMiddleware, getMe);
 
 //access-staff-api
-router.patch("/staff-permissions/:id", updateStaffPermissions)
+router.patch("/staff-permissions/:id",authMiddleware, updateStaffPermissions)
 
 // enquire-form-data
 router.post("/get-Enquire-now-Data",getEnquiryDetails)
-router.get("/get-all-users",getEnquireNowData)
+router.get("/get-all-users",authMiddleware,getEnquireNowData)
 
 //delete-user-api
-router.delete("/delete-access-user/:id",deleteAccessUser)
+router.delete("/delete-access-user/:id",authMiddleware,deleteAccessUser)
 
 //footer-form-api
-router.get("/get-footer-email-data", getFooterEmailData)
+router.get("/get-footer-email-data", authMiddleware,getFooterEmailData)
 router.post("/footer-Email",footerEmail)
 
 // contact-us-page-api
 router.post("/contact-us-page",SendContactUsData)
-router.get("/get-contact-us-data",getContactUsData)
+router.get("/get-contact-us-data",authMiddleware,getContactUsData)
 
 // carrer page
 router.post("/send-carrer-data", upload.single("resume"), SendCarrerData);
-router.get("/get-carrer-form-data", getCarrerFormData);
+router.get("/get-carrer-form-data",authMiddleware, getCarrerFormData);
 
 //career page job data
 router.post("/send-careerpagejob-data", sendCareerPageJobData);
@@ -38,15 +43,15 @@ router.get("/get-careerpagejob-data", getCareerPageJobData);
 
 //Nri form page
 router.post("/nri-form-data", sendNriFormData);
-router.get("/get-nri-form-data", getNriFormData);
+router.get("/get-nri-form-data",authMiddleware, getNriFormData);
 
 // Blog — images in uploads/blog/
-router.post("/send-blog-data", uploadBlog.single("image"), sendBlogData);
+router.post("/send-blog-data", uploadBlog.single("image"),authMiddleware, sendBlogData);
 router.get("/get-blog-data", getBlogData);
-router.get("/blog/:id", getBlogById);
+router.get("/blog/:id",getBlogById);
 router.get("/recent-blogs", getRecentBlogs);
-router.delete("/delete-blog-data/:id", deleteBlogData);
-router.put("/update-blog-data/:id", uploadBlog.single("image"), updateBlogData);
+router.delete("/delete-blog-data/:id",authMiddleware, deleteBlogData);
+router.put("/update-blog-data/:id",authMiddleware, uploadBlog.single("image"), updateBlogData);
 
 
 // forget-password-api
