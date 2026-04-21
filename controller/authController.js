@@ -8,8 +8,10 @@ import enquireFormDataModal from "../modal/enquire-now-data.js"
 import footerEmailModal from "../modal/footerEmailModal.js"
 import contactUsPage from "../modal/contact-us.js"
 import carrerPage from "../modal/carrerpage.js"
+import careerPageJob from "../modal/careerPageJob.js"
 import nriFormDataModal from "../modal/nri-form-data.js"
 import Blog from "../modal/blogSchema.js"
+import { normalizeBlogFaqsInput } from "../modal/blogFaqSchema.js"
 import nodemailer from "nodemailer"
 
 function jwtSecret() {
@@ -178,23 +180,32 @@ export const getMe = async (req, res) => {
   } catch (e) {
     return res.status(500).json({ message: e.message })
   }
+
   try {
+    const token = req.cookies?.token // 👈 cookie se token
     const payload = getJwtPayloadFromCookie(req)
+
     if (!payload?.id) {
       return res.status(401).json({ message: "Not authenticated" })
     }
+
     const user = await User.findById(payload.id)
       .select("-password -sessionToken")
       .lean()
+
     if (!user) {
       return res.status(404).json({ message: "User not found" })
     }
-    return res.status(200).json({ user })
+
+    return res.status(200).json({
+      user,
+      token, // 👈 token bhi bhej diya
+    })
+
   } catch (error) {
     return res.status(500).json({ message: error.message })
   }
 }
-
 export const updateStaffPermissions = async (req, res) => {
   try {
     jwtSecret()
@@ -510,6 +521,57 @@ export const getCarrerFormData = async (req, res) => {
   }
 };
 
+// career page job (profile + description)
+export const sendCareerPageJobData = async (req, res) => {
+  try {
+    const profile = String(req.body?.profile ?? "").trim();
+    const description = String(req.body?.description ?? "").trim();
+
+    if (!profile || !description) {
+      return res.status(400).json({ message: "profile and description are required" });
+    }
+
+    const saved = await careerPageJob.create({ profile, description });
+    return res.status(201).json({
+      message: "Career page job data saved successfully",
+      data: saved,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getCareerPageJobData = async (req, res) => {
+  try {
+    console.log("getCareerPageJobData called");
+    const { page, limit, skip } = parseListPagination(req);
+    const [list, totalItems] = await Promise.all([
+      careerPageJob.find().sort({ _id: -1 }).skip(skip).limit(limit).lean(),
+      careerPageJob.countDocuments(),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+
+    return res.status(200).json({
+      message: "Career page job data fetched successfully",
+      data: list,
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        hasPrevPage: page > 1,
+        hasNextPage: page < totalPages,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 function isValidNriEmail(email) {
   const e = String(email ?? "").trim();
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(e);
@@ -624,11 +686,27 @@ export const sendBlogData = async (req, res) => {
     const metaDescription = readMultipartText(req.body, "metaDescription");
     const metaKeywords = readMultipartText(req.body, "metaKeywords");
 
+    let faqs = [];
+    if (req.body.faqs != null && req.body.faqs !== "") {
+      try {
+        faqs = normalizeBlogFaqsInput(req.body.faqs);
+      } catch (e) {
+        const code = e?.code;
+        const hint =
+          'Send form field "faqs" as text: JSON array like [{"question":"Q?","answer":"A"}]';
+        return res.status(400).json({
+          message: code === "INVALID_FAQ_SHAPE" ? String(e.message) : "Invalid faqs JSON",
+          hint,
+        });
+      }
+    }
+
     if (!title || !description) {
       return res.status(400).json({
-        message: "title and description are required (form-data text fields)",
+        message: "title and description are required",
       });
     }
+
     if (!req.file) {
       return res.status(400).json({
         message: 'image file is required (form-data key: "image")',
@@ -643,8 +721,14 @@ export const sendBlogData = async (req, res) => {
       image: imagePath,
       metaDescription,
       metaKeywords,
+      faqs, // ✅ added
     });
-    return res.status(201).json({ message: "Blog data saved successfully", blog });
+
+    return res.status(201).json({
+      message: "Blog data saved successfully",
+      blog,
+    });
+
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -736,24 +820,43 @@ export const updateBlogData = async (req, res) => {
   try {
     const { id } = req.params;
     const body = req.body && typeof req.body === "object" ? req.body : {};
+
     const title = readMultipartText(body, "title");
     const description = readMultipartText(body, "description");
     const metaDescription = readMultipartText(body, "metaDescription");
     const metaKeywords = readMultipartText(body, "metaKeywords");
 
+    let faqsNormalized;
+    const faqsFieldPresent = Object.prototype.hasOwnProperty.call(body, "faqs");
+    if (faqsFieldPresent) {
+      try {
+        faqsNormalized = normalizeBlogFaqsInput(body.faqs);
+      } catch (e) {
+        const code = e?.code;
+        const hint =
+          'Send form field "faqs" as text: JSON array like [{"question":"Q?","answer":"A"}] or [] to clear';
+        return res.status(400).json({
+          message: code === "INVALID_FAQ_SHAPE" ? String(e.message) : "Invalid faqs JSON",
+          hint,
+        });
+      }
+    }
+
     const updateData = {};
+
     if (title) updateData.title = title;
     if (description) updateData.description = description;
-    updateData.metaDescription = metaDescription;
-    updateData.metaKeywords = metaKeywords;
+    if (metaDescription) updateData.metaDescription = metaDescription;
+    if (metaKeywords) updateData.metaKeywords = metaKeywords;
+    if (faqsFieldPresent) updateData.faqs = faqsNormalized;
+
     if (req.file) {
       updateData.image = path.posix.join(BLOG_UPLOAD_RELATIVE_DIR, req.file.filename);
     }
 
-    if (!title && !description && !req.file) {
+    if (!title && !description && !req.file && !faqsFieldPresent) {
       return res.status(400).json({
-        message:
-          "Send at least one of: title, description (form-data text fields), or image file (form-data key: image)",
+        message: "Send at least one field (title, description, faqs, image)",
       });
     }
 
@@ -767,6 +870,7 @@ export const updateBlogData = async (req, res) => {
       message: "Blog updated successfully",
       data: blog,
     });
+
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

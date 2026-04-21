@@ -1,5 +1,5 @@
 import express from "express"
-import { deleteAccessUser, getEnquiryDetails, sendOtp,verifyOtp, resetPassword,getBlogData, getBlogById, loginStaff, sendBlogData, registerStaff, getEnquireNowData, getAllStaffUsers,footerEmail,getFooterEmailData,SendContactUsData ,getContactUsData,SendCarrerData,getCarrerFormData, sendNriFormData, getNriFormData, getMe, updateStaffPermissions, logoutStaff,getRecentBlogs, deleteBlogData, updateBlogData} from "../controller/authController.js"
+import { deleteAccessUser, getEnquiryDetails, sendOtp,verifyOtp, resetPassword,getBlogData, getBlogById, loginStaff, sendBlogData, registerStaff, getEnquireNowData, getAllStaffUsers,footerEmail,getFooterEmailData,SendContactUsData ,getContactUsData,SendCarrerData,getCarrerFormData, sendCareerPageJobData, getCareerPageJobData, sendNriFormData, getNriFormData, getMe, updateStaffPermissions, logoutStaff,getRecentBlogs, deleteBlogData, updateBlogData} from "../controller/authController.js"
 import { upload, uploadBlog } from "../middleware/multer.js"
 
 const router = express.Router()
@@ -31,6 +31,10 @@ router.get("/get-contact-us-data",getContactUsData)
 // carrer page
 router.post("/send-carrer-data", upload.single("resume"), SendCarrerData);
 router.get("/get-carrer-form-data", getCarrerFormData);
+
+//career page job data
+router.post("/send-careerpagejob-data", sendCareerPageJobData);
+router.get("/get-careerpagejob-data", getCareerPageJobData);
 
 //Nri form page
 router.post("/nri-form-data", sendNriFormData);
