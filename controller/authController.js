@@ -263,18 +263,19 @@ export const updateStaffPermissions = async (req, res) => {
 
 export const getEnquiryDetails = async (req, res) => {
   try {
-    const { firstName, lastName, email, mobile } = req.body;
+    const { fullName, email, mobile } = req.body;
+    // console.log("api hit ho rha hai",fullName, email, mobile);
 
-    if (!firstName || !lastName || !email || !mobile) {
+    if (!fullName || !email || !mobile) {
       return res.status(400).json({
         success: false,
         message: "All fields are required"
       });
+    
     }
 
     const savedEnquiry = await enquireFormDataModal.create({
-      firstName,
-      lastName,
+      fullName,
       email,
       mobile
     });
@@ -554,7 +555,7 @@ export const sendCareerPageJobData = async (req, res) => {
 
 export const getCareerPageJobData = async (req, res) => {
   try {
-    console.log("getCareerPageJobData called");
+    // console.log("getCareerPageJobData called");
     const { page, limit, skip } = parseListPagination(req);
     const [list, totalItems] = await Promise.all([
       careerPageJob.find().sort({ _id: -1 }).skip(skip).limit(limit).lean(),
