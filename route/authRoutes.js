@@ -55,8 +55,8 @@ router.put("/update-blog-data/:id",authMiddleware, uploadBlog.single("image"), u
 
 
 //project-dropdown-brachure-api
-router.post("/dropdown-brachure-data", sendProjectDropdownBrachureData);
-router.get("/dropdown-brachure-data",authMiddleware, getProjectDropdownBrachureData);
+router.post("/download-brachure-data", sendProjectDropdownBrachureData);
+router.get("/download-brachure-data",authMiddleware, getProjectDropdownBrachureData);
 
 
 // forget-password-api
