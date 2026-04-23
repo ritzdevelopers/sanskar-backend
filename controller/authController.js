@@ -13,6 +13,7 @@ import nriFormDataModal from "../modal/nri-form-data.js"
 import Blog from "../modal/blogSchema.js"
 import { normalizeBlogFaqsInput } from "../modal/blogFaqSchema.js"
 import nodemailer from "nodemailer"
+import { projectDropdownBrachureModal } from "../modal/projectDropdownBrachureModal.js"
 
 function jwtSecret() {
   const s = process.env.JWT_SECRET
@@ -547,6 +548,7 @@ export const getCarrerFormData = async (req, res) => {
   }
 };
 
+
 // career page job (profile + description)
 export const sendCareerPageJobData = async (req, res) => {
   try {
@@ -1012,4 +1014,45 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+//project-dropdown-brachure-api
+export const sendProjectDropdownBrachureData = async (req, res) => {
+  try {
+    const { name, email, mobile, project } = req.body;
+
+    // validation
+    if (!name || !email || !mobile || !project) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const saveData=await projectDropdownBrachureModal.create({name,email,mobile,project})
+    return res.status(200).json({message:"Data saved successfully",saveData})
+  
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+}
+
+export const getProjectDropdownBrachureData = async (req, res) => {
+  try {
+    const { page, limit, skip } = parseListPagination(req);
+    const [list, totalItems] = await Promise.all([
+      projectDropdownBrachureModal.find().sort({ _id: -1 }).skip(skip).limit(limit).lean(),
+      projectDropdownBrachureModal.countDocuments(),
+    ])
+    const totalPages=Math.max(1,Math.ceil(totalItems/limit))
+    return res.status(200).json({message:"Data fetched successfully",data:list,pagination:{
+      page,limit,totalItems,totalPages,hasPrevPage:page>1,hasNextPage:page<totalPages,
+    }})
+  }
+  catch (error) {
+    return res.status(500).json({ message: error.message })
+  }
+} 
 

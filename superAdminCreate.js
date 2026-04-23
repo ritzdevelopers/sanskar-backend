@@ -31,13 +31,13 @@ const userSchema = new mongoose.Schema(
 )
 const User =
   mongoose.models.User || mongoose.model("User", userSchema)
-  
 
-/**
+  /**
  * Har run par NAYA superadmin — sirf email unique honi chahiye.
  * Kitne bhi superadmin ho sakte hain, alag-alag email se script dubara chalao.
  */
 
+  
 const SUPERADMIN_NAME = "Super Admin"
 const SUPERADMIN_PASSWORD = "SuperAdmin"
 const SUPERADMIN_EMAIL = "superadmin1@gmail.com"
