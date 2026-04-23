@@ -1,5 +1,5 @@
 import express from "express"
-import { deleteAccessUser, getEnquiryDetails, sendOtp,verifyOtp, resetPassword,getBlogData, getBlogById, loginStaff, sendBlogData, registerStaff, getEnquireNowData, getAllStaffUsers,footerEmail,getFooterEmailData,SendContactUsData ,getContactUsData,SendCarrerData,getCarrerFormData, sendCareerPageJobData, getCareerPageJobData, sendNriFormData, getNriFormData, getMe, updateStaffPermissions, logoutStaff,getRecentBlogs, deleteBlogData, updateBlogData} from "../controller/authController.js"
+import { deleteAccessUser, getEnquiryDetails, sendOtp,verifyOtp, resetPassword,getBlogData, getBlogById, loginStaff, sendBlogData, registerStaff, getEnquireNowData, getAllStaffUsers,footerEmail,getFooterEmailData,SendContactUsData ,getContactUsData,SendCarrerData,getCarrerFormData, sendCareerPageJobData, getCareerPageJobData, sendNriFormData, getNriFormData, getMe, updateStaffPermissions, logoutStaff,getRecentBlogs, deleteBlogData, updateBlogData, sendProjectDropdownBrachureData,getProjectDropdownBrachureData} from "../controller/authController.js"
 import { upload, uploadBlog } from "../middleware/multer.js"
 import { authMiddleware } from "../middleware/authMiddleware.js"
 
@@ -54,10 +54,17 @@ router.delete("/delete-blog-data/:id",authMiddleware, deleteBlogData);
 router.put("/update-blog-data/:id",authMiddleware, uploadBlog.single("image"), updateBlogData);
 
 
+//project-dropdown-brachure-api
+router.post("/brachure", sendProjectDropdownBrachureData);
+router.get("/brachure",authMiddleware, getProjectDropdownBrachureData);
+
+
 // forget-password-api
 router.post("/send-otp", sendOtp);
 router.post("/verify-otp", verifyOtp);
 router.post("/reset-password", resetPassword);
+
+
 
 
 export default router
