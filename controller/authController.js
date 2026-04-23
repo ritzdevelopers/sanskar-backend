@@ -263,21 +263,35 @@ export const updateStaffPermissions = async (req, res) => {
 
 export const getEnquiryDetails = async (req, res) => {
   try {
-    const { fullName, email, mobile } = req.body;
-    // console.log("api hit ho rha hai",fullName, email, mobile);
+    const body = req.body ?? {};
+    const email = String(body.email ?? "").trim();
+    const mobile = String(body.mobile ?? "").replace(/\D/g, "");
+
+    const fullNameRaw = String(body.fullName ?? "").trim();
+    const firstName = String(body.firstName ?? "").trim();
+    const lastName = String(body.lastName ?? "").trim();
+    const fullName =
+      fullNameRaw ||
+      [firstName, lastName].filter(Boolean).join(" ").trim();
 
     if (!fullName || !email || !mobile) {
+      const missing = [
+        !fullName ? "fullName" : "",
+        !email ? "email" : "",
+        !mobile ? "mobile" : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
       return res.status(400).json({
         success: false,
-        message: "All fields are required"
+        message: `${missing} required`,
       });
-    
     }
 
     const savedEnquiry = await enquireFormDataModal.create({
       fullName,
       email,
-      mobile
+      mobile,
     });
 
     return res.status(201).json({
